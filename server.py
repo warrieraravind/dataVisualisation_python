@@ -14,6 +14,7 @@ import random
 import matplotlib.pyplot as plt
 import numpy as np
 import math
+import operator
 import pandas as pd
 
 app = Flask(__name__)
@@ -21,6 +22,22 @@ host = "localhost"
 port = 27017
 db_name = "data_db"
 collection_name = "data_comm"
+random_sample = 0
+stratified_sample = 0
+
+normalized_random_sample = 0
+normalized_stratified_sample = 0
+
+random_correlation_matrix = 0
+stratified_correlation_matrix = 0
+
+random_pca_sum_squared = 0
+random_pca_result = 0
+stratified_pca_sum_squared = 0
+stratified_pca_result = 0
+
+transformed_random_pc = 0
+transformed_stratified_pc = 0
 
 fields = {
     "_id" :  False,
@@ -39,8 +56,36 @@ fields = {
 
 @app.route("/")
 def index():
-    return render_template ( "index.html" )
+    return render_template ( "dashboard.html" )
 
+
+
+@app.route("/scatter_tab")
+def route_scatter():
+    twing = {
+        "random": {
+            "transformed_random_pc": transformed_random_pc.tolist()
+        },
+        "stratified": {
+            "transformed_stratified_pc": transformed_stratified_pc.tolist()
+        }
+    }
+
+    return json.dumps(twing, default=json_util.default)
+
+
+@app.route("/scree_tab")
+def route_scree():
+    twing = {
+        "random": {
+            "random_pca_sum_squared": random_pca_sum_squared
+        },
+        "stratified": {
+            "stratified_pca_sum_squared": stratified_pca_sum_squared
+        }
+    }
+
+    return json.dumps(twing, default=json_util.default)
 
 def do_random_sampling (arr):
     """
@@ -98,24 +143,23 @@ def calculate_pca(arr, num_of_pc = None):
         P, D, Q = np.linalg.svd(arr, full_matrices=False)
         pc_components_len = len([index for index, value in enumerate(D) if value > 1])
 
-        print(P)
-        print('***')
-
         pca = PCA(n_components=pc_components_len)
         pca_result = pca.fit_transform(arr)
-        print(pca_result)
 
         squared_pca_result = [square_func(value) for index, value in enumerate(pca_result)]
         sum_squared_pca_result = [sum(value) for index, value in enumerate(squared_pca_result)]
 
-        field_sum_squared_pca_result = dict()
+        field_rms_pca_result = dict()
         index = 0
+
         for field in fields:
             if field is not '_id':
-                field_sum_squared_pca_result[field] = sum_squared_pca_result[index]
+                field_rms_pca_result[field] = (sum_squared_pca_result[index]/pc_components_len) ** 0.5
                 index += 1
 
-        return field_sum_squared_pca_result, pca_result
+        field_rms_pca_result = sorted(field_rms_pca_result.items(), key=lambda x: x[1] * -1)
+
+        return field_rms_pca_result, pca_result
 
 
 def square_func(x):
@@ -146,6 +190,22 @@ def setup():
     :return:
 
     """
+    global random_sample
+    global stratified_sample
+    global normalized_random_sample
+    global normalized_stratified_sample
+
+    global random_correlation_matrix
+    global stratified_correlation_matrix
+
+    global random_pca_sum_squared
+    global random_pca_result
+    global stratified_pca_sum_squared
+    global stratified_pca_result
+
+    global transformed_random_pc
+    global transformed_stratified_pc
+
     connection = MongoClient(host, port)
     collection = connection[db_name][collection_name]
 
@@ -168,15 +228,24 @@ def setup():
     stratified_pca_sum_squared, stratified_pca_result = calculate_pca(stratified_correlation_matrix)
 
     transformed_random_pc = np.dot(normalized_stratified_sample, stratified_pca_result)
-    transformed_stratified_pc =  np.dot(normalized_stratified_sample, random_pca_result)
+    transformed_stratified_pc = np.dot(normalized_stratified_sample, random_pca_result)
 
     twing = {
-        "aravind": {
-            "warrier": 1
+        "random": {
+            "transformed_random_pc": transformed_random_pc.tolist()
+        },
+        "stratified" : {
+            "transformed_stratified_pc": transformed_stratified_pc.tolist()
         }
     }
 
-    return json.dumps(twing, default=lambda o: o.__dict__)
+    # twing = {
+    #     "random": transformed_random_pc.tolist(),
+    #     "stratified": transformed_stratified_pc.tolist()
+    # }
+
+    # return json.dumps(twing, default=lambda o: o.__dict__)
+    return json.dumps(twing, default=json_util.default)
 
 if __name__ == "__main__":
     app.run(debug = True)
