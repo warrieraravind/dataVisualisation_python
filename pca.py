@@ -1,6 +1,8 @@
 from sklearn.cluster import KMeans
 from scipy.spatial.distance import cdist, pdist
 from pymongo import MongoClient
+from sklearn.decomposition import PCA
+
 import numpy as np
 from scipy import linalg as LA
 import matplotlib.pyplot as plt
@@ -27,12 +29,22 @@ def do_pca_analysis(arr):
         new_arr.append(x)
 
     correlation_matrix = np.corrcoef(new_arr, rowvar=False)
+
     U, eig_vals, V = np.linalg.svd(correlation_matrix)
 
-    print(eig_vals)
-    plt.plot(eig_vals)
-    plt.show()
+    print(U)
+    # print (V)
 
+
+    print('***')
+    # print(eig_vals)
+    # plt.plot(eig_vals)
+    # plt.show()
+
+    pca = PCA(n_components=3)
+    pca.fit(correlation_matrix)
+    X = pca.transform(correlation_matrix)
+    print(X)
 
 if __name__ == '__main__':
     host = "localhost"

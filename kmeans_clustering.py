@@ -1,6 +1,7 @@
 from sklearn.cluster import KMeans
 from scipy.spatial.distance import cdist, pdist
 from pymongo import MongoClient
+
 import numpy as np
 import matplotlib.pyplot as plt
 
@@ -34,6 +35,7 @@ def do_stratified_sampling (arr):
     k_euclid = [cdist(new_arr, cent) for cent in centroids]
     dist = [np.min(ke, axis=1) for ke in k_euclid]
     wcss = [sum(d ** 2) for d in dist]
+    print(wcss)
     plt.plot(wcss)
     plt.show()
 

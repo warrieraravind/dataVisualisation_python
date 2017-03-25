@@ -36,3 +36,5 @@ import -d data_db -c data_comm --type csv --headerline --file data.csv
 	"symmetry_worst" : 0.4601,
 	"fractal_dimension_worst" : 0.1189
 }
+
+sudo chown -R `id -u` /data/db
