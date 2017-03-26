@@ -64,6 +64,18 @@ fields = {
     "fractal_dimension_mean": True
 }
 
+field_index = {
+    "radius_mean" : 0,
+	"texture_mean" : 1,
+	"perimeter_mean" : 2,
+	"area_mean" : 3,
+	"smoothness_mean" : 4,
+	"compactness_mean" : 5,
+	"concavity_mean" : 6,
+	"concave points_mean" : 7,
+	"symmetry_mean" : 8,
+    "fractal_dimension_mean": 9
+}
 
 @app.route("/")
 def index():
@@ -153,6 +165,30 @@ def route_mds_euclidean():
 
     return json.dumps(twing, default=json_util.default)
 
+@app.route('/matrix_random_tab')
+def route_matrix_random():
+    global normalized_random_sample
+    print(random_pca_sum_squared[0][0])
+    twing = {
+        "normalized_random_sample": normalized_random_sample.tolist(),
+        "indices": [field_index[random_pca_sum_squared[0][0]], field_index[random_pca_sum_squared[1][0]],
+                    field_index[random_pca_sum_squared[2][0]]],
+        "labels": [random_pca_sum_squared[0][0], random_pca_sum_squared[1][0], random_pca_sum_squared[2][0]]
+    }
+
+    return json.dumps(twing, default=json_util.default)
+
+@app.route('/matrix_stratified_tab')
+def route_matrix_stratified():
+    global normalized_stratified_sample
+    twing = {
+        "normalized_stratified_sample": normalized_stratified_sample.tolist(),
+        "indices": [field_index[stratified_pca_sum_squared[0][0]], field_index[stratified_pca_sum_squared[1][0]],
+                    field_index[stratified_pca_sum_squared[2][0]]],
+        "labels": [stratified_pca_sum_squared[0][0], stratified_pca_sum_squared[1][0], stratified_pca_sum_squared[2][0]]
+    }
+
+    return json.dumps(twing, default=json_util.default)
 
 def do_kmeans_clustering():
     new_arr = []

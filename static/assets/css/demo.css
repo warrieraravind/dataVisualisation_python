@@ -39,6 +39,24 @@ path {
     shape-rendering: crispEdges;
 }
 
+.axis,
+.frame {
+  shape-rendering: crispEdges;
+}
+
+.cell text {
+  font-weight: bold;
+  text-transform: capitalize;
+}
+
+.frame {
+  fill: none;
+  stroke: #aaa;
+}
+
+circle {
+  fill-opacity: .7;
+}
 
 
 .main text {
@@ -49,6 +67,11 @@ path {
     shape-rendering: crispEdges;
     stroke: black;
     fill: none;
+}
+
+svg {
+  font: 10px sans-serif;
+  padding: 10px;
 }
 
 circle {
