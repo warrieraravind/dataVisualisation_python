@@ -45,25 +45,25 @@
                   <li id="intrinsic_tab">
                      <a onclick="setTab('intrinsic_tab')">
                         <i class="pe-7s-note2"></i>
-                        <p>Intrinsic Dimension</p>
+                        <p>Intrinsic Dimensionality</p>
                      </a>
                   </li>
-                  <li>
-                     <a href="typography.html">
+                  <li id="elbow_tab">
+                     <a onclick="setTab('elbow_tab')">
                         <i class="pe-7s-news-paper"></i>
-                        <p>Typography</p>
+                        <p>K Means Elbow</p>
                      </a>
                   </li>
-                  <li>
-                     <a href="icons.html">
+                  <li id="mds_correlation_tab">
+                     <a onclick="setTab('mds_correlation_tab')">
                         <i class="pe-7s-science"></i>
-                        <p>Icons</p>
+                        <p>MDS Correlation</p>
                      </a>
                   </li>
-                  <li>
-                     <a href="maps.html">
+                  <li id="mds_euclidean_tab">
+                     <a onclick="setTab('mds_euclidean_tab')">
                         <i class="pe-7s-map-marker"></i>
-                        <p>Maps</p>
+                        <p>MDS Euclidean</p>
                      </a>
                   </li>
                   <li>
@@ -73,9 +73,9 @@
                      </a>
                   </li>
                   <li class="active-pro">
-                     <a href="upgrade.html">
+                     <a onclick="reset()">
                         <i class="pe-7s-rocket"></i>
-                        <p>Upgrade to PRO</p>
+                        <p>New Samples!</p>
                      </a>
                   </li>
                </ul>
@@ -84,7 +84,7 @@
          <div class="main-panel">
             <div class="content">
                <div class="container-fluid">
-                  <div class="row">
+                  <div class="row" id="split_col">
                      <div class="col-md-6">
                         <div class="card">
                            <div class="header">
@@ -98,11 +98,13 @@
                                     <i class="fa fa-circle text-info"></i> Open
                                     <i class="fa fa-circle text-danger"></i> Bounce
                                     <i class="fa fa-circle text-warning"></i> Unsubscribe
+                                    </div-->
+                                 <div class="MSR">
+                                    <hr>
+                                    <div class="stats">
+                                       <i class="fa fa-clock-o"></i> MSR -  Means Squared Error
+                                    </div>
                                  </div>
-                                 <hr>
-                                 <div class="stats">
-                                    <i class="fa fa-clock-o"></i> Campaign sent 2 days ago
-                                 </div-->
                               </div>
                            </div>
                         </div>
@@ -120,12 +122,40 @@
                                     <i class="fa fa-circle text-info"></i> Open
                                     <i class="fa fa-circle text-danger"></i> Click
                                     <i class="fa fa-circle text-warning"></i> Click Second Time
+                                    </div-->
+                                 <div class="MSR">
+                                    <hr>
+                                    <div class="stats">
+                                       <i class="fa fa-history"></i> MSR -  Means Squared Error
+                                    </div>
                                  </div>
-                                 <hr>
-                                 <div class="stats">
-                                    <i class="fa fa-history"></i> Updated 3 minutes ago
-                                 </div>
-                              </div-->
+                              </div>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="row" id="single_col" style="display:none">
+                     <div class="col-md-12">
+                        <div class="card" style="height: 700px">
+                           <div class="header">
+                              <h4 class="title">K Means Elbow</h4>
+                              <!--p class="category">Last Campaign Performance</p-->
+                           </div>
+                           <div class="content">
+                              <div id="elbow_svg" class="ct-chart ct-perfect-fourth"></div>
+                              <div class="footer">
+                                 <!--div class="legend">
+                                    <i class="fa fa-circle text-info"></i> Open
+                                    <i class="fa fa-circle text-danger"></i> Bounce
+                                    <i class="fa fa-circle text-warning"></i> Unsubscribe
+                                    </div>
+                                    <div class="MSR">
+                                     <hr>
+                                     <div class="stats">
+                                        <i class="fa fa-clock-o"></i> MSR -  Means Squared Error
+                                     </div>
+                                    </div-->
+                              </div>
                            </div>
                         </div>
                      </div>

@@ -3,21 +3,21 @@ from flask import render_template
 from pymongo import MongoClient
 from sklearn.decomposition import PCA
 from bson import json_util
-from bson.json_util import dumps
 from sklearn import preprocessing
-
 from scipy.spatial.distance import cdist, pdist
 from sklearn.cluster import KMeans
+from sklearn import metrics as SK_Metrics
+from sklearn.manifold import MDS
 
 import json
 import random
-import matplotlib.pyplot as plt
 import numpy as np
 import math
-import operator
 import pandas as pd
 
+
 app = Flask(__name__)
+
 host = "localhost"
 port = 27017
 db_name = "data_db"
@@ -38,6 +38,17 @@ stratified_pca_result = 0
 
 transformed_random_pc = 0
 transformed_stratified_pc = 0
+
+eigen_value_random = 0
+eigen_value_stratified = 0
+
+whole_data = 0
+wcss = 0
+
+mds_random_euclidean = 0
+mds_stratified_euclidean = 0
+mds_random_correlation = 0
+mds_stratified_correlation = 0
 
 fields = {
     "_id" :  False,
@@ -87,6 +98,81 @@ def route_scree():
 
     return json.dumps(twing, default=json_util.default)
 
+@app.route("/intrinsic_tab")
+def route_intrinsic():
+    twing = {
+        "random": {
+            "eigen_value_random": eigen_value_random.tolist()
+        },
+        "stratified": {
+            "eigen_value_stratified": eigen_value_stratified.tolist()
+        }
+    }
+
+    return json.dumps(twing, default=json_util.default)
+
+@app.route("/elbow_tab")
+def route_elbow():
+    global wcss
+
+    twing = {
+        "elbow": wcss
+    }
+
+    return json.dumps(twing, default=json_util.default)
+
+@app.route('/mds_correlation_tab')
+def route_mds_correlation():
+    global mds_random_correlation
+    global mds_stratified_correlation
+
+    twing = {
+        "random": {
+            "mds_random_correlation": mds_random_correlation.tolist()
+        },
+        "stratified": {
+            "mds_stratified_correlation" : mds_stratified_correlation.tolist()
+        }
+    }
+
+    return json.dumps(twing, default=json_util.default)
+
+@app.route('/mds_euclidean_tab')
+def route_mds_euclidean():
+    global mds_random_euclidean
+    global mds_stratified_euclidean
+
+    twing = {
+        "random": {
+            "mds_random_euclidean": mds_random_euclidean.tolist()
+        },
+        "stratified": {
+            "mds_stratified_euclidean": mds_stratified_euclidean.tolist()
+        }
+    }
+
+    return json.dumps(twing, default=json_util.default)
+
+
+def do_kmeans_clustering():
+    new_arr = []
+    global whole_data
+    global fields
+    global wcss
+    n = 25
+    for item in whole_data:
+        x = []
+        for field in fields:
+            if field is not '_id':
+                x.append(item[field])
+        new_arr.append(x)
+
+    kMeansVar = [KMeans(n_clusters=k).fit(new_arr) for k in range(1, n)]
+    centroids = [X.cluster_centers_ for X in kMeansVar]
+    k_euclid = [cdist(new_arr, cent) for cent in centroids]
+    dist = [np.min(ke, axis=1) for ke in k_euclid]
+    wcss = [sum(d ** 2) for d in dist]
+
 def do_random_sampling (arr):
     """
     This function does the random sampling
@@ -130,6 +216,32 @@ def do_stratified_sampling (arr):
 
     return return_list
 
+def do_mds():
+    global transformed_random_pc
+    global transformed_stratified_pc
+    global mds_random_euclidean
+    global mds_stratified_euclidean
+    global mds_random_correlation
+    global mds_stratified_correlation
+
+    mds_random_euclidean = calculate_mds(transformed_random_pc, 'euclidean')
+    mds_stratified_euclidean = calculate_mds(transformed_stratified_pc, 'euclidean')
+
+    mds_random_correlation = calculate_mds(transformed_random_pc, 'correlation')
+    mds_stratified_correlation = calculate_mds(transformed_stratified_pc, 'correlation')
+
+def calculate_mds(data, type):
+    distance_matrix = SK_Metrics.pairwise_distances(data, metric=type)
+    mds = MDS(n_components=2, dissimilarity='precomputed')
+    return mds.fit_transform(distance_matrix)
+
+def convert_mds_to_object(mds_data):
+    str_arr = str(mds_data).split("\n")[1:]
+    return_arr = []
+    for string in str_arr:
+        return_arr.append(string.split(' ')[3:])
+
+    return return_arr
 
 def calculate_pca(arr, num_of_pc = None):
     """
@@ -159,7 +271,7 @@ def calculate_pca(arr, num_of_pc = None):
 
         field_rms_pca_result = sorted(field_rms_pca_result.items(), key=lambda x: x[1] * -1)
 
-        return field_rms_pca_result, pca_result
+        return field_rms_pca_result, pca_result, D
 
 
 def square_func(x):
@@ -206,6 +318,11 @@ def setup():
     global transformed_random_pc
     global transformed_stratified_pc
 
+    global eigen_value_random
+    global eigen_value_stratified
+
+    global whole_data
+
     connection = MongoClient(host, port)
     collection = connection[db_name][collection_name]
 
@@ -215,8 +332,11 @@ def setup():
         return_arr.append ( item )
 
     # return_arr = json.dumps(return_arr, default=json_util.default)
+    whole_data = return_arr
     random_sample = do_random_sampling(return_arr)
     stratified_sample = do_stratified_sampling(return_arr)
+
+    do_kmeans_clustering()
 
     normalized_random_sample = normalize_data(random_sample)
     normalized_stratified_sample = normalize_data(stratified_sample)
@@ -224,11 +344,13 @@ def setup():
     random_correlation_matrix = np.corrcoef(normalized_random_sample, rowvar=False)
     stratified_correlation_matrix = np.corrcoef(normalized_stratified_sample, rowvar=False)
 
-    random_pca_sum_squared, random_pca_result = calculate_pca(random_correlation_matrix)
-    stratified_pca_sum_squared, stratified_pca_result = calculate_pca(stratified_correlation_matrix)
+    random_pca_sum_squared, random_pca_result, eigen_value_random = calculate_pca(random_correlation_matrix)
+    stratified_pca_sum_squared, stratified_pca_result, eigen_value_stratified = calculate_pca(stratified_correlation_matrix)
 
     transformed_random_pc = np.dot(normalized_stratified_sample, stratified_pca_result)
     transformed_stratified_pc = np.dot(normalized_stratified_sample, random_pca_result)
+
+    do_mds()
 
     twing = {
         "random": {
@@ -239,12 +361,6 @@ def setup():
         }
     }
 
-    # twing = {
-    #     "random": transformed_random_pc.tolist(),
-    #     "stratified": transformed_stratified_pc.tolist()
-    # }
-
-    # return json.dumps(twing, default=lambda o: o.__dict__)
     return json.dumps(twing, default=json_util.default)
 
 if __name__ == "__main__":
