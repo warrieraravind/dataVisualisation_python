@@ -44,6 +44,10 @@ function render_elbow(error, result_json) {
     if (!error) {
         displayOff('split_col')
         displayOn('single_col')
+        d3.selectAll('svg').remove()
+
+        document.getElementById('single_col_title').innerHTML = 'K Means Elbow'
+
         data = result_json['elbow']
         render_line_plot('elbow_svg', convert1Dto2D(data), 600, 450, 30, '# of Cluster', 'Error')
     }
@@ -104,6 +108,10 @@ function render_matrix_random(error, result_json) {
     if (!error) {
         displayOn('single_col')
         displayOff('split_col')
+        d3.selectAll('svg').remove()
+
+        document.getElementById('single_col_title').innerHTML = 'Matrix Scatter Plot - Random'
+
         indices = result_json["indices"]
         data = result_json['normalized_random_sample']
         labels = result_json['labels']
@@ -119,6 +127,10 @@ function render_matrix_stratified(error, result_json) {
     if (!error) {
         displayOn('single_col')
         displayOff('split_col')
+        d3.selectAll('svg').remove()
+
+        document.getElementById('single_col_title').innerHTML = 'Matrix Scatter Plot - Stratified'
+
         indices = result_json["indices"]
         data = result_json['normalized_stratified_sample']
         labels = result_json['labels']
@@ -439,15 +451,9 @@ function render_matrix(id, data, indices, labels) {
             return "translate(" + (n - i - 1) * size + ",0)";
         })
         .each(function(d) {
-            console.log(domainByTrait)
-            console.log(d)
-
-            console.log(domainByTrait[d])
             x.domain(domainByTrait[d]);
             d3.select(this).call(xAxis);
         });
-
-
 
     svg.selectAll(".y.axis")
         .data(traits)
@@ -478,7 +484,7 @@ function render_matrix(id, data, indices, labels) {
         .attr("y", padding)
         .attr("dy", ".71em")
         .text(function(d) {
-            return d.x;
+            return labels[d.x];
         });
 
     function plot(p) {
@@ -575,11 +581,11 @@ function objectToArray(obj) {
 }
 
 function setTabInactive() {
-//    ids = ["scatter_tab", "scree_tab", "intrinsic_tab", "elbow_tab", "mds_correlation_tab", "mds_euclidean_tab", "matrix_random_tab", "matrix_stratified_tab"]
-//    for (i = 0; i < ids.length; i++) {
-//        id = ids[i]
-//        document.getElementById(id).classList.remove("active")
-//    }
+    ids = ["scatter_tab", "scree_tab", "intrinsic_tab", "elbow_tab", "mds_correlation_tab", "mds_euclidean_tab", "matrix_random_tab", "matrix_stratified_tab"]
+    for (i = 0; i < ids.length; i++) {
+        id = ids[i]
+        document.getElementById(id).classList.remove("active")
+    }
 }
 
 

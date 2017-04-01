@@ -168,7 +168,7 @@ def route_mds_euclidean():
 @app.route('/matrix_random_tab')
 def route_matrix_random():
     global normalized_random_sample
-    print(random_pca_sum_squared[0][0])
+
     twing = {
         "normalized_random_sample": normalized_random_sample.tolist(),
         "indices": [field_index[random_pca_sum_squared[0][0]], field_index[random_pca_sum_squared[1][0]],
@@ -383,8 +383,8 @@ def setup():
     random_pca_sum_squared, random_pca_result, eigen_value_random = calculate_pca(random_correlation_matrix)
     stratified_pca_sum_squared, stratified_pca_result, eigen_value_stratified = calculate_pca(stratified_correlation_matrix)
 
-    transformed_random_pc = np.dot(normalized_stratified_sample, stratified_pca_result)
-    transformed_stratified_pc = np.dot(normalized_stratified_sample, random_pca_result)
+    transformed_stratified_pc = np.dot(normalized_stratified_sample, stratified_pca_result)
+    transformed_random_pc = np.dot(normalized_random_sample, random_pca_result)
 
     do_mds()
 
