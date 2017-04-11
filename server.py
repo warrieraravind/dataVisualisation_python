@@ -13,7 +13,6 @@ import json
 import random
 import numpy as np
 import math
-import pandas as pd
 
 
 app = Flask(__name__)
@@ -215,7 +214,7 @@ def do_random_sampling (arr):
     :param arr:
     :return:
     """
-    return random.sample (arr, 115)
+    return random.sample (arr, 286)
 
 
 def do_stratified_sampling (arr):
@@ -246,25 +245,26 @@ def do_stratified_sampling (arr):
 
     for i in label_points:
         data_points_for_i = label_points[i]
-        number_of_samples = len(data_points_for_i) * 0.20
+        number_of_samples = len(data_points_for_i) * 0.50
         x = random.sample(data_points_for_i, math.ceil(number_of_samples))
         return_list = return_list + x
 
     return return_list
 
 def do_mds():
-    global transformed_random_pc
-    global transformed_stratified_pc
     global mds_random_euclidean
     global mds_stratified_euclidean
     global mds_random_correlation
     global mds_stratified_correlation
+    global normalized_stratified_sample
+    global normalized_random_sample
 
-    mds_random_euclidean = calculate_mds(transformed_random_pc, 'euclidean')
-    mds_stratified_euclidean = calculate_mds(transformed_stratified_pc, 'euclidean')
 
-    mds_random_correlation = calculate_mds(transformed_random_pc, 'correlation')
-    mds_stratified_correlation = calculate_mds(transformed_stratified_pc, 'correlation')
+    mds_random_euclidean = calculate_mds(normalized_random_sample, 'euclidean')
+    mds_stratified_euclidean = calculate_mds(normalized_stratified_sample, 'euclidean')
+
+    mds_random_correlation = calculate_mds(normalized_random_sample, 'correlation')
+    mds_stratified_correlation = calculate_mds(normalized_stratified_sample, 'correlation')
 
 def calculate_mds(data, type):
     distance_matrix = SK_Metrics.pairwise_distances(data, metric=type)

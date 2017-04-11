@@ -210,6 +210,14 @@ function scatter_plot(id, data) {
         .data(data)
         .enter().append("svg:circle")
         .attr("cx", function(d, i) {
+            return width;
+        })
+        .attr("cy", function(d) {
+            return height;
+        })
+        .transition()
+        .duration(2000)
+        .attr("cx", function(d, i) {
             return x(d[0]);
         })
         .attr("cy", function(d) {
@@ -376,6 +384,9 @@ function render_line_plot(id, data, w, h, translate_x, x_axis_text, y_axis_text)
         .attr("stroke", "black")
         .attr("stroke-width", 2)
         .attr("fill", "none")
+        .transition()
+        .duration(1500)
+        .attr('stroke-dashoffset', 0)
 
     // Add the valueline path.
     svg.append("path")
@@ -405,8 +416,8 @@ function render_line_plot(id, data, w, h, translate_x, x_axis_text, y_axis_text)
 function render_matrix(id, data, indices, labels) {
 
     var width = 1060,
-        size = 230,
-        padding = 20;
+        size = 190,
+        padding = 40;
 
     var x = d3.scale.linear()
         .range([padding / 2, size - padding / 2]);
@@ -417,12 +428,12 @@ function render_matrix(id, data, indices, labels) {
     var xAxis = d3.svg.axis()
         .scale(x)
         .orient("bottom")
-        .ticks(6);
+        .ticks(10);
 
     var yAxis = d3.svg.axis()
         .scale(y)
         .orient("left")
-        .ticks(6);
+        .ticks(10);
 
     var color = d3.scale.category10();
 
@@ -503,6 +514,10 @@ function render_matrix(id, data, indices, labels) {
         cell.selectAll("circle")
             .data(data)
             .enter().append("circle")
+            .attr("cx", x(0))
+            .attr("cy", y(0))
+            .transition()
+            .duration(2000)
             .attr("cx", function(d) {
                 return x(d[p.x]);
             })
